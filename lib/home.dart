@@ -4,6 +4,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:guide_me/Login.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:guide_me/halaman_profil.dart';
+import 'package:guide_me/halaman_rating.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,11 +40,11 @@ class HomePageState extends State<HomePage>
   String? userRole;
   bool _isLoggedIn = FirebaseAuth.instance.currentUser != null;
   String? _userName;
-  
+
   // ScrollController for animation effects
   final ScrollController _scrollController = ScrollController();
   bool _showAppBarTitle = false;
-  
+
   // Add a variable to track current carousel index
   int _currentCarouselIndex = 0;
   // Add a variable to track selected category
@@ -65,7 +67,7 @@ class HomePageState extends State<HomePage>
       'description': 'Enjoy the pristine beaches',
     },
   ];
-  
+
   // Categories with modern icons
   final List<Map<String, dynamic>> _categories = [
     {'name': 'All', 'icon': Icons.grid_view_rounded},
@@ -76,7 +78,7 @@ class HomePageState extends State<HomePage>
     {'name': 'Hotel', 'icon': Icons.hotel_rounded},
     {'name': 'History', 'icon': Icons.museum_rounded},
   ];
-  
+
   // Destination items - Popular Tourist Spots
   final List<Map<String, dynamic>> _popularDestinations = [
     {
@@ -84,31 +86,31 @@ class HomePageState extends State<HomePage>
       'image': "assets/images/slider2.png",
       'rating': 4.8,
       'category': 'Park',
-      'location': 'Batam'
+      'location': 'Batam',
     },
     {
       'title': "Pantai Nongsa",
       'image': "assets/images/slider3.png",
       'rating': 4.7,
       'category': 'Beach',
-      'location': 'Batam'
+      'location': 'Batam',
     },
     {
       'title': "Jembatan Barelang",
       'image': "assets/images/slider1.png",
       'rating': 4.9,
       'category': 'History',
-      'location': 'Batam'
+      'location': 'Batam',
     },
     {
       'title': "Nagoya Hill Mall",
       'image': "assets/images/slider2.png",
       'rating': 4.6,
       'category': 'Mall',
-      'location': 'Batam'
+      'location': 'Batam',
     },
   ];
-  
+
   // Other tourist attractions - Separated from popular destinations
   final List<Map<String, dynamic>> _otherDestinations = [
     {
@@ -116,46 +118,48 @@ class HomePageState extends State<HomePage>
       'image': "assets/images/slider1.png",
       'rating': 4.5,
       'category': 'History',
-      'location': 'Batam'
+      'location': 'Batam',
     },
     {
       'title': "Harbor Bay",
       'image': "assets/images/slider3.png",
       'rating': 4.4,
       'category': 'Beach',
-      'location': 'Batam'
+      'location': 'Batam',
     },
     {
       'title': "Joyful Café",
       'image': "assets/images/slider1.png",
       'rating': 4.7,
       'category': 'Café',
-      'location': 'Batam'
+      'location': 'Batam',
     },
     {
       'title': "Mercure Hotel",
       'image': "assets/images/slider2.png",
       'rating': 4.8,
       'category': 'Hotel',
-      'location': 'Batam'
+      'location': 'Batam',
     },
   ];
-  
+
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400), // Fixed milliseconds instead of microseconds
+      duration: const Duration(
+        milliseconds: 400,
+      ), // Fixed milliseconds instead of microseconds
     );
     _checkUserRole();
     _checkLoginStatus();
     _fetchUserName();
-    
+
     // Add scroll listener for animations
     _scrollController.addListener(_onScroll);
   }
-  
+
   void _onScroll() {
     // Show/hide app bar title based on scroll position
     final showTitle = _scrollController.offset > 150;
@@ -308,13 +312,12 @@ class HomePageState extends State<HomePage>
                 ),
                 onTap: () async {
                   if (FirebaseAuth.instance.currentUser != null) {
-                   
                     await FirebaseAuth.instance.signOut();
                     setState(() {
                       userRole = null;
                       _userName = null;
                     });
-                   
+
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -322,7 +325,6 @@ class HomePageState extends State<HomePage>
                       ),
                     );
                   } else {
-                   
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -430,122 +432,121 @@ class HomePageState extends State<HomePage>
                         child: CarouselSlider(
                           options: CarouselOptions(
                             height: 220.0,
-                            autoPlay: true,
-                            autoPlayInterval: const Duration(seconds: 3),
-                            viewportFraction: 1.0,
-                            onPageChanged: (index, reason) {
-                              setState(() {
-                                _currentCarouselIndex = index;
-                              });
-                            },
-                          ),
-                          items: _carouselItems.map((item) {
-                            return Builder(
-                              builder: (BuildContext context) {
-                                return Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 2.0,
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      // Image
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          15,
-                                        ),
-                                        child: Image.asset(
-                                          item['image']!,
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                        ),
-                                      ),
-                                      // Gradient overlay for better text visibility
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          15,
-                                        ),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              colors: [
-                                                Colors.transparent,
-                                                Colors.black.withOpacity(
-                                                  0.6,
-                                                ),
-                                              ],
-                                              stops: const [0.6, 1.0],
+                        autoPlay: true,
+                      autoPlayInterval: const Duration(seconds: 3),
+                    viewportFraction: 1.0,
+                  onPageChanged: (index, reason) {
+                setState(() {
+              _currentCarouselIndex = index;
+          });
+        },
+      ),
+        items:
+        _carouselItems.map((item) {
+          return Builder(
+            builder: (BuildContext context) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                  margin: const EdgeInsets.symmetric(  horizontal: 2.0,),
+                    child: Stack(
+                                children: [
+                                          // Image
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                            child: Image.asset(
+                                              item['image']!,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: double.infinity,
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                      // Text overlay
-                                      Positioned(
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(
-                                            16.0,
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item['title']!,
-                                                style: GoogleFonts.poppins(
-                                                  color: Colors.white,
-                                                  fontSize: 20,
-                                                  fontWeight:
-                                                      FontWeight.bold,
-                                                  shadows: [
-                                                    Shadow(
-                                                      blurRadius: 3.0,
-                                                      color: Colors.black
-                                                          .withOpacity(0.5),
-                                                      offset: const Offset(
-                                                        0,
-                                                        1,
-                                                      ),
+                                          // Gradient overlay for better text visibility
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    Colors.transparent,
+                                                    Colors.black.withOpacity(
+                                                      0.6,
                                                     ),
                                                   ],
+                                                  stops: const [0.6, 1.0],
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                item['description']!,
-                                                style: GoogleFonts.poppins(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                  fontWeight:
-                                                      FontWeight.w400,
+                                            ),
+                                          ),
+                                          // Text overlay
+                                  Positioned(
+                                    bottom: 0,
+                                      left: 0,
+                                        right: 0,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(
+                                              16.0,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    item['title']!,
+                                                    style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      shadows: [
+                                                        Shadow(
+                                                          blurRadius: 3.0,
+                                                          color: Colors.black
+                                                              .withOpacity(0.5),
+                                                          offset: const Offset(
+                                                            0,
+                                                            1,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    item['description']!,
+                                                    style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w400,
                                                   shadows: [
                                                     Shadow(
                                                       blurRadius: 2.0,
                                                       color: Colors.black
-                                                          .withOpacity(0.5),
-                                                      offset: const Offset(
-                                                        0,
-                                                        1,
-                                                      ),
+                                                        .withOpacity(0.5),
+                                                          offset: const Offset(
+                                                            0,
+                                                            1,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    );
+                                  },
                                 );
-                              },
-                            );
-                          }).toList(),
+                              }).toList(),
                         ),
                       ),
                     ),
@@ -553,26 +554,32 @@ class HomePageState extends State<HomePage>
                     // Add indicator dots
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: _carouselItems.asMap().entries.map((entry) {
-                        return Container(
-                          width: 8.0,
-                          height: 8.0,
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                          ),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentCarouselIndex == entry.key
-                                ? const Color(0xFF5ABB4D) // Active dot color (green)
-                                : Colors.grey.withOpacity(0.5), // Inactive dot color
-                          ),
-                        );
-                      }).toList(),
+                      children:
+                          _carouselItems.asMap().entries.map((entry) {
+                            return Container(
+                              width: 8.0,
+                              height: 8.0,
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color:
+                                    _currentCarouselIndex == entry.key
+                                        ? const Color(
+                                          0xFF5ABB4D,
+                                        ) // Active dot color (green)
+                                        : Colors.grey.withOpacity(
+                                          0.5,
+                                        ), // Inactive dot color
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ],
                 ),
               ),
-              
+
               // Category selector section - IMPROVED
               Container(
                 padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
@@ -584,7 +591,7 @@ class HomePageState extends State<HomePage>
                   ),
                 ),
               ),
-              
+
               // Enhanced categories with modern icons and animation - FIXED ANIMATION
               SizedBox(
                 height: 110,
@@ -595,11 +602,14 @@ class HomePageState extends State<HomePage>
                   itemBuilder: (context, index) {
                     final category = _categories[index];
                     final isSelected = _selectedCategory == category['name'];
-                    
+
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
-                      margin: EdgeInsets.only(top: isSelected ? 0 : 8.0, bottom: isSelected ? 8.0 : 0),
+                      margin: EdgeInsets.only(
+                        top: isSelected ? 0 : 8.0,
+                        bottom: isSelected ? 8.0 : 0,
+                      ),
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
@@ -615,26 +625,36 @@ class HomePageState extends State<HomePage>
                               Container(
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? const Color(0xFF5ABB4D)
-                                      : Colors.white,
+                                  color:
+                                      isSelected
+                                          ? const Color(0xFF5ABB4D)
+                                          : Colors.white,
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: isSelected 
-                                          ? const Color(0xFF5ABB4D).withOpacity(0.3)
-                                          : Colors.black.withOpacity(0.05),
+                                      color:
+                                          isSelected
+                                              ? const Color(
+                                                0xFF5ABB4D,
+                                              ).withOpacity(0.3)
+                                              : Colors.black.withOpacity(0.05),
                                       blurRadius: isSelected ? 8 : 4,
                                       spreadRadius: isSelected ? 2 : 0,
-                                      offset: isSelected 
-                                          ? const Offset(0, 3)
-                                          : const Offset(0, 2),
+                                      offset:
+                                          isSelected
+                                              ? const Offset(0, 3)
+                                              : const Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: Icon(
                                   category['icon'],
-                                  color: isSelected ? Colors.white : const Color(0xFF5ABB4D).withOpacity(0.8),
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : const Color(
+                                            0xFF5ABB4D,
+                                          ).withOpacity(0.8),
                                   size: 30,
                                 ),
                               ),
@@ -643,8 +663,14 @@ class HomePageState extends State<HomePage>
                                 category['name'],
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                  color: isSelected ? const Color(0xFF5ABB4D) : Colors.black87,
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                  color:
+                                      isSelected
+                                          ? const Color(0xFF5ABB4D)
+                                          : Colors.black87,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -656,18 +682,14 @@ class HomePageState extends State<HomePage>
                   },
                 ),
               ),
-              
+
               // Popular destinations section - FIXED CARD IMPLEMENTATION
               Container(
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
                 color: grayColor,
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.star,
-                      color: Color(0xFF5ABB4D),
-                      size: 24,
-                    ),
+                    const Icon(Icons.star, color: Color(0xFF5ABB4D), size: 24),
                     const SizedBox(width: 8),
                     Text(
                       "Tempat Wisata Batam Terpopuler",
@@ -679,29 +701,41 @@ class HomePageState extends State<HomePage>
                   ],
                 ),
               ),
-             
-             
+
               SizedBox(
                 height: 240, // Height for the cards
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: _popularDestinations.where((dest) =>
-                    _selectedCategory == 'All' || dest['category'] == _selectedCategory
-                  ).length,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount:
+                      _popularDestinations
+                          .where(
+                            (dest) =>
+                                _selectedCategory == 'All' ||
+                                dest['category'] == _selectedCategory,
+                          )
+                          .length,
                   itemBuilder: (context, index) {
-                    final filteredDestinations = _popularDestinations.where((dest) =>
-                      _selectedCategory == 'All' || dest['category'] == _selectedCategory
-                    ).toList();
-                    
+                    final filteredDestinations =
+                        _popularDestinations
+                            .where(
+                              (dest) =>
+                                  _selectedCategory == 'All' ||
+                                  dest['category'] == _selectedCategory,
+                            )
+                            .toList();
+
                     if (filteredDestinations.isEmpty) {
                       return const Center(
                         child: Text("No destinations in this category"),
                       );
                     }
-                    
+
                     final destination = filteredDestinations[index];
-                   
+
                     // Use safer animation approach
                     return AnimatedOpacity(
                       duration: const Duration(milliseconds: 300),
@@ -720,7 +754,7 @@ class HomePageState extends State<HomePage>
                   },
                 ),
               ),
-              
+
               // ADDED SEPARATE SECTION FOR OTHER TOURIST ATTRACTIONS
               Container(
                 padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
@@ -743,29 +777,42 @@ class HomePageState extends State<HomePage>
                   ],
                 ),
               ),
-              
+
               // Other destinations section - SEPARATED FROM POPULAR DESTINATIONS
               SizedBox(
                 height: 240, // Height for the cards
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: _otherDestinations.where((dest) =>
-                    _selectedCategory == 'All' || dest['category'] == _selectedCategory
-                  ).length,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  itemCount:
+                      _otherDestinations
+                          .where(
+                            (dest) =>
+                                _selectedCategory == 'All' ||
+                                dest['category'] == _selectedCategory,
+                          )
+                          .length,
                   itemBuilder: (context, index) {
-                    final filteredDestinations = _otherDestinations.where((dest) =>
-                      _selectedCategory == 'All' || dest['category'] == _selectedCategory
-                    ).toList();
-                    
+                    final filteredDestinations =
+                        _otherDestinations
+                            .where(
+                              (dest) =>
+                                  _selectedCategory == 'All' ||
+                                  dest['category'] == _selectedCategory,
+                            )
+                            .toList();
+
                     if (filteredDestinations.isEmpty) {
                       return const Center(
                         child: Text("No destinations in this category"),
                       );
                     }
-                    
+
                     final destination = filteredDestinations[index];
-                    
+
                     return AnimatedOpacity(
                       duration: const Duration(milliseconds: 300),
                       opacity: 1.0,
@@ -783,7 +830,7 @@ class HomePageState extends State<HomePage>
                   },
                 ),
               ),
-             
+
               const SizedBox(height: 16),
             ],
           ),
@@ -800,7 +847,7 @@ class DestinationCard extends StatelessWidget {
   final String image;
   final double rating;
   final String location;
-  
+
   const DestinationCard({
     super.key,
     required this.title,
@@ -808,7 +855,7 @@ class DestinationCard extends StatelessWidget {
     required this.rating,
     required this.location,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -829,13 +876,17 @@ class DestinationCard extends StatelessWidget {
             // Background image
             Positioned.fill(
               child: Image.asset(
-                image, 
+                image,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey.shade300,
                     child: const Center(
-                      child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
                     ),
                   );
                 },
@@ -865,7 +916,8 @@ class DestinationCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min, // Make sure row doesn't take all width
+                  mainAxisSize:
+                      MainAxisSize.min, // Make sure row doesn't take all width
                   children: [
                     const Icon(Icons.star, color: Colors.amber, size: 16),
                     const SizedBox(width: 2),
@@ -936,26 +988,140 @@ class DestinationCard extends StatelessWidget {
     );
   }
 }
-class CustomBottomNavBar extends StatelessWidget {
+
+// Custom Bottom Navigation Bar
+class CustomBottomNavBar extends StatefulWidget {
   const CustomBottomNavBar({super.key});
+
+  @override
+  State<CustomBottomNavBar> createState() => _CustomBottomNavBarState();
+}
+
+class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
+  int selectedIndex = 0;
+
+  final List<IconData> icons = [
+    Icons.home,
+    Icons.star,
+    Icons.person,
+  ];
+
+  final List<Widget> pages = [
+    const Home(),
+    const HalamanRating(),
+    const HalamanProfil(),
+  ];
+
+  void onTap(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => pages[index]),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: 80,
       margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: const Color(0xFF5ABB4D),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(30),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: const [
-          Icon(Icons.notifications, color: Colors.white, size: 28),
-          Icon(Icons.home, color: Colors.white, size: 28),
-          Icon(Icons.person, color: Colors.white, size: 28),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(icons.length, (index) {
+              final isSelected = selectedIndex == index;
+              return Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(60),
+                    splashColor: Colors.white.withOpacity(0.3),
+                    onTap: () => onTap(index),
+                    child: Transform.translate(
+                      offset: Offset(0, isSelected ? -10 : 0),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        height: 60,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white : Colors.transparent,
+                          shape: BoxShape.circle,
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Center(
+                          child: AnimatedScale(
+                            duration: const Duration(milliseconds: 150),
+                            scale: isSelected ? 1.1 : 1.0,
+                            child: Icon(
+                              icons[index],
+                              color: isSelected ? const Color(0xFF5ABB4D) : Colors.white,
+                              size: isSelected ? 28 : 26,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+          // Highlight efek bundar animasi
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: [
+              Alignment(-1.0, 1.0),
+              Alignment(0.0, 1.0),
+              Alignment(1.0, 1.0),
+            ][selectedIndex],
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+}
+// Placeholder untuk halaman
+class Home extends StatelessWidget {
+  const Home({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Home')));
+}
+
+class HalamanRating extends StatelessWidget {
+  const HalamanRating({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Rating')));
+}
+
+class HalamanProfil extends StatelessWidget {
+  const HalamanProfil({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(body: Center(child: Text('Profil')));
 }

@@ -10,12 +10,15 @@ late SharedPreferences prefs;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Init SharedPreferences
   prefs = await SharedPreferences.getInstance();
 
+  // Load env file, pastikan path .env sesuai dengan project kamu
   await dotenv.load(fileName: "mailersend-proxy/.env");
 
   try {
+    // Initialize Firebase dengan config dari env
     await Firebase.initializeApp(
       options: FirebaseOptions(
         apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
@@ -26,17 +29,19 @@ Future<void> main() async {
       ),
     );
     print('✅ Firebase initialized successfully.');
-    
+
+    // Listen perubahan auth state user
     FirebaseAuth.instance.authStateChanges().listen((User? user) async {
       if (user == null) {
+        // Jika logout, hapus cache role user
         await prefs.remove('user_role');
         print('👤 User is signed out, cleared role data');
       } else {
-        _updateUserRoleCache(user.uid);
+        // Jika login, update cache role user
+        await _updateUserRoleCache(user.uid);
         print('👤 Auth state changed for user: ${user.uid}');
       }
     });
-    
   } catch (e) {
     print('❌ Error initializing Firebase: $e');
   }
@@ -44,14 +49,14 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-// Function update cache user role
+// Fungsi update cache user role di SharedPreferences
 Future<void> _updateUserRoleCache(String uid) async {
   try {
     DocumentSnapshot userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .get();
-        
+
     if (userDoc.exists) {
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
       String role = userData['role'] ?? 'user';
@@ -78,13 +83,13 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.green,
       ),
-      themeMode: ThemeMode.system, // Pakai settingan device
+      themeMode: ThemeMode.system, // Ikuti settingan device
       home: const SplashScreen(),
     );
   }
 }
 
-// ========== MailerSend Env Helpers ========== //
+// ===== MailerSend Env Helpers =====
 
 String getMailerSendApiKey() {
   final apiKey = dotenv.env['MAILERSEND_API_KEY'];
@@ -102,28 +107,28 @@ String getMailerSendSenderEmail() {
   return sender ?? '';
 }
 
-// ========== Auth Service ========== //
+// ===== Auth Service =====
 
 class AuthService {
   static Future<String?> getCachedUserRole() async {
     return prefs.getString('user_role');
   }
-  
+
   static Future<void> saveUserRole(String role) async {
     await prefs.setString('user_role', role);
   }
-  
+
   static Future<void> clearUserData() async {
     await prefs.remove('user_role');
   }
-  
+
   static Future<String?> verifyUserRole(String uid) async {
     try {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
           .get();
-          
+
       if (userDoc.exists) {
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
         String role = userData['role'] ?? 'user';

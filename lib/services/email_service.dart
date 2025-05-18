@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class EmailService {
-  static const String _serverUrl = 'http://localhost:3000/reset-password'; 
+  static const String _serverUrl = 'http://localhost:3000/reset'; 
   static Future<bool> sendOtpEmail(String recipientEmail, String otpCode) async {
     try {
       final response = await http.post(

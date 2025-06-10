@@ -1,14 +1,14 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const axios = require("axios");
 const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
-app.post("/reset-password", async (req, res) => {
+ 
+app.post("/reset", async (req, res) => {
   const { from, to, subject, html } = req.body;
 
   // Validasi input
@@ -18,23 +18,24 @@ app.post("/reset-password", async (req, res) => {
     });
   }
 
-  // Periksa API key
+  // Periksa API Key Mailersend
   const apiKey = process.env.MAILERSEND_API_KEY;
   if (!apiKey) {
-    console.error("❌ API Key MailerSend tidak ditemukan di .env");
+    console.error("❌ API Key Mailersend tidak ditemukan di .env");
     return res.status(500).json({
       message: "Konfigurasi server salah: API Key tidak tersedia.",
     });
   }
 
   try {
+    // Mengirim permintaan ke Mailersend API
     const response = await axios.post(
       "https://api.mailersend.com/v1/email",
       {
         from: { email: from },
         to: [{ email: to }],
-        subject,
-        html,
+        subject: subject,
+        html: html, // HTML body berisi kode OTP
       },
       {
         headers: {

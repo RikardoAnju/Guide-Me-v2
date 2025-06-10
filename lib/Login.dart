@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:guide_me/Register.dart';
-
-import 'package:guide_me/adminpage.dart';
+import 'package:guide_me/admin/adminpage.dart';
 import 'package:guide_me/forgotpassword.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart'; // Untuk kIsWeb
+import 'dart:io' show Platform; // Untuk Platform detection
 import 'Home.dart';
 
 void main() {
@@ -27,6 +28,43 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
 
+  // Method untuk mendeteksi platform
+  String _getCurrentPlatform() {
+    if (kIsWeb) {
+      return 'web';
+    } else if (Platform.isAndroid) {
+      return 'android';
+    } else if (Platform.isIOS) {
+      return 'ios';
+    } else if (Platform.isWindows) {
+      return 'windows';
+    } else if (Platform.isMacOS) {
+      return 'macos';
+    } else if (Platform.isLinux) {
+      return 'linux';
+    } else {
+      return 'unknown';
+    }
+  }
+
+  // Method untuk memeriksa apakah owner bisa login di platform ini
+  bool _isOwnerAllowedOnPlatform() {
+    String platform = _getCurrentPlatform();
+    
+    // Konfigurasi platform yang diizinkan untuk owner
+    // Ubah sesuai kebutuhan bisnis Anda
+    List<String> allowedPlatforms = [
+      'web',      // Web browser
+      'windows',  // Desktop Windows
+      'macos',    // Desktop macOS
+      'linux',    // Desktop Linux
+      'android',  // Mobile Android (DITAMBAHKAN)
+      'ios',      // Mobile iOS (DITAMBAHKAN)
+    ];
+    
+    return allowedPlatforms.contains(platform);
+  }
+
   Future<void> _checkEmailVerification(String userId) async {
     User? user = FirebaseAuth.instance.currentUser;
     await user?.reload();
@@ -43,6 +81,17 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       print("Email belum diverifikasi atau user null!");
+    }
+  }
+
+  Future<void> _saveUserRole(String role) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userRole', role);
+      print("User role saved to SharedPreferences: $role");
+    } catch (e) {
+      print("Error saving user role to SharedPreferences: $e");
     }
   }
 
@@ -79,9 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        // Perbarui status emailVerified di Firestore
         await _checkEmailVerification(user.uid);
-
         _redirectUser(user);
       }
     } on FirebaseAuthException catch (e) {
@@ -107,42 +154,88 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _redirectUser(User user) async {
-    DocumentSnapshot userDoc =
-        await _firestore.collection('users').doc(user.uid).get();
+    try {
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
 
-    if (userDoc.exists) {
-      String role = userDoc['role'];
+      if (userDoc.exists) {
+        String role = userDoc['role'];
+        String currentPlatform = _getCurrentPlatform();
+        
+        print("User logged in with role: $role on platform: $currentPlatform");
 
-      if (role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminPage()),
-        );
+        if (role == 'admin') {
+          await _saveUserRole(role);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminPage()),
+          );
+        } else if (role == 'Owner') {
+          // PERBAIKAN: Cek apakah owner diizinkan di platform ini
+          if (_isOwnerAllowedOnPlatform()) {
+            await _saveUserRole(role);
+            
+            // Arahkan ke halaman yang sesuai untuk owner
+            // Anda bisa membuat halaman khusus owner atau gunakan AdminPage
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          } else {
+            // Jika masih ingin membatasi di platform tertentu
+            await _auth.signOut();
+            setState(() {
+              _isLoading = false;
+            });
+            _showError('Akses owner dibatasi untuk platform $currentPlatform. Silakan gunakan web browser.');
+            return;
+          }
+        } else if (role == 'user') {
+          await _saveUserRole(role);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else {
+          await _auth.signOut();
+          setState(() {
+            _isLoading = false;
+          });
+          _showError('Role pengguna tidak valid!');
+        }
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        _showError('User data tidak ditemukan!');
+        setState(() {
+          _isLoading = false;
+        });
       }
-    } else {
-      _showError('User data tidak ditemukan!');
+    } catch (e) {
+      print("Error in _redirectUser: $e");
+      _showError('Terjadi kesalahan saat mengambil data pengguna!');
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   void _showError(String message) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Login Error'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Login Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _emailController.clear();
+              _passwordController.clear();
+            },
+            child: const Text('OK'),
           ),
+        ],
+      ),
     );
   }
 
@@ -157,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             height: 300,
             decoration: const BoxDecoration(
-              color: Colors.green,
+              color: Color(0xFF5ABB4D),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(40),
                 bottomRight: Radius.circular(40),
@@ -165,16 +258,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          Positioned(
-            top: 10,
-            left: 20,
-            child: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-            ),
-          ),
           Positioned(
             top: 10,
             left: 20,
@@ -199,8 +282,8 @@ class _LoginScreenState extends State<LoginScreen> {
             right: 0,
             child: Center(
               child: Image.asset(
-                'assets/images/logo5.png', 
-                width: 120, 
+                'assets/images/logo5.png',
+                width: 120,
                 height: 120,
                 fit: BoxFit.contain,
               ),
@@ -277,7 +360,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           context,
                           MaterialPageRoute(builder: (context) => ForgotPassword())
                         );
-
                       },
                       child: const Text(
                         "Forgot password?",
@@ -293,24 +375,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: const Color(0xFF5ABB4D),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child:
-                          _isLoading
-                              ? const CircularProgressIndicator(
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : const Text(
+                              "LOGIN",
+                              style: TextStyle(
                                 color: Colors.white,
-                              )
-                              : const Text(
-                                "LOGIN",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                                fontSize: 16,
                               ),
+                            ),
                     ),
                   ),
 

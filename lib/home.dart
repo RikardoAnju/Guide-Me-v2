@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:guide_me/Login.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'destinasi.dart';
 import 'requestRole.dart';
 import 'tambah_destinasi.dart';
 import 'Profile.dart';
@@ -294,19 +295,30 @@ class HomePageState extends State<HomePage>
                 ],
               ),
             ),
-            _buildDrawerItem(Icons.map, "Destinasi", () {}),
+            _buildDrawerItem(Icons.map, "Destinasi", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DestinationDetailPage(),
+                ),
+              );
+            }),
             _buildDrawerItem(Icons.event, "Event", () {}),
             _buildDrawerItem(Icons.confirmation_number, "Tiket", () {}),
             _buildDrawerItem(Icons.image, "Galeri", () {}),
             _isLoggedIn && userRole != "user"
-                ? _buildDrawerItem(Icons.tips_and_updates, "Tambah Destinasi", () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TambahDestinasiPage(),
-                    ),
-                  );
-                })
+                ? _buildDrawerItem(
+                  Icons.tips_and_updates,
+                  "Tambah Destinasi",
+                  () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TambahDestinasiPage(),
+                      ),
+                    );
+                  },
+                )
                 : SizedBox.shrink(),
             if (_isLoggedIn && userRole != "owner")
               _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {

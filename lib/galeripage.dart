@@ -291,14 +291,7 @@ class _GaleripageState extends State<Galeripage>
                   ),
                 );
               }),
-            if (_isLoggedIn && userRole != "owner")
-              _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RequestRolePage()),
-                );
-              }),
+
             if (userRole == "owner")
               _buildDrawerItem(Icons.calendar_today, "Add Event", () {}),
           ],

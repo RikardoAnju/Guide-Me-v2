@@ -272,7 +272,6 @@ class _GaleripageState extends State<Galeripage>
                 MaterialPageRoute(builder: (context) => const Eventpage()),
               );
             }),
-<<<<<<< HEAD
             _buildDrawerItem(Icons.image, "Galeri", () {
               Navigator.pop(context);
             }, isSelected: true),
@@ -290,9 +289,6 @@ class _GaleripageState extends State<Galeripage>
                 MaterialPageRoute(builder: (context) => RequestRolePage()),
               );
             }),
-=======
-            _buildDrawerItem(Icons.image, "Galeri", () {}),
->>>>>>> 802679828eab4bec679633744d94da7b95dd661e
             if (_isLoggedIn && userRole != "user")
               _buildDrawerItem(Icons.tips_and_updates, "Tambah Destinasi", () {
                 Navigator.pop(context);
@@ -303,18 +299,6 @@ class _GaleripageState extends State<Galeripage>
                   ),
                 );
               }),
-<<<<<<< HEAD
-
-=======
-            if (_isLoggedIn && userRole != "owner")
-              _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RequestRolePage()),
-                );
-              }),
->>>>>>> 802679828eab4bec679633744d94da7b95dd661e
             if (userRole == "owner")
               _buildDrawerItem(Icons.calendar_today, "Add Event", () {}),
           ],

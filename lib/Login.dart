@@ -50,18 +50,18 @@ class _LoginScreenState extends State<LoginScreen> {
   // Method untuk memeriksa apakah owner bisa login di platform ini
   bool _isOwnerAllowedOnPlatform() {
     String platform = _getCurrentPlatform();
-    
+
     // Konfigurasi platform yang diizinkan untuk owner
     // Ubah sesuai kebutuhan bisnis Anda
     List<String> allowedPlatforms = [
-      'web',      // Web browser
-      'windows',  // Desktop Windows
-      'macos',    // Desktop macOS
-      'linux',    // Desktop Linux
-      'android',  // Mobile Android (DITAMBAHKAN)
-      'ios',      // Mobile iOS (DITAMBAHKAN)
+      'web', // Web browser
+      'windows', // Desktop Windows
+      'macos', // Desktop macOS
+      'linux', // Desktop Linux
+      'android', // Mobile Android (DITAMBAHKAN)
+      'ios', // Mobile iOS (DITAMBAHKAN)
     ];
-    
+
     return allowedPlatforms.contains(platform);
   }
 
@@ -161,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userDoc.exists) {
         String role = userDoc['role'];
         String currentPlatform = _getCurrentPlatform();
-        
+
         print("User logged in with role: $role on platform: $currentPlatform");
 
         if (role == 'admin') {
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // PERBAIKAN: Cek apakah owner diizinkan di platform ini
           if (_isOwnerAllowedOnPlatform()) {
             await _saveUserRole(role);
-            
+
             // Arahkan ke halaman yang sesuai untuk owner
             // Anda bisa membuat halaman khusus owner atau gunakan AdminPage
             Navigator.pushReplacement(
@@ -187,7 +187,9 @@ class _LoginScreenState extends State<LoginScreen> {
             setState(() {
               _isLoading = false;
             });
-            _showError('Akses owner dibatasi untuk platform $currentPlatform. Silakan gunakan web browser.');
+            _showError(
+              'Akses owner dibatasi untuk platform $currentPlatform. Silakan gunakan web browser.',
+            );
             return;
           }
         } else if (role == 'user') {
@@ -222,20 +224,21 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Login Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _emailController.clear();
-              _passwordController.clear();
-            },
-            child: const Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Login Error'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _emailController.clear();
+                  _passwordController.clear();
+                },
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -260,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           Positioned(
             top: 10,
-            left: 20,
+            left: 10,
             child: IconButton(
               onPressed: () {
                 if (Navigator.canPop(context)) {
@@ -358,7 +361,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => ForgotPassword())
+                          MaterialPageRoute(
+                            builder: (context) => ForgotPassword(),
+                          ),
                         );
                       },
                       child: const Text(
@@ -381,17 +386,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                          : const Text(
-                              "LOGIN",
-                              style: TextStyle(
+                      child:
+                          _isLoading
+                              ? const CircularProgressIndicator(
                                 color: Colors.white,
-                                fontSize: 16,
+                              )
+                              : const Text(
+                                "LOGIN",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
                     ),
                   ),
 

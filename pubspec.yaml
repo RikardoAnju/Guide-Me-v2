@@ -43,6 +43,8 @@ dependencies:
   url_launcher: ^6.3.1
   cached_network_image: ^3.4.1
   badges: ^3.1.2
+  giphy_get: ^3.6.1
+
 
 
 dev_dependencies:

@@ -4,10 +4,15 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:guide_me/Login.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:guide_me/eventpage.dart';
+import 'destinasipage.dart';
+import 'galeripage.dart';
 import 'requestRole.dart';
+import 'discusspage.dart';
 import 'tambah_destinasi.dart';
 import 'Profile.dart';
 import 'dart:async';
+import 'app_colors.dart';
 
 void main() => runApp(const MyApp());
 
@@ -26,6 +31,25 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class NotificationsUser extends StatelessWidget {
+  const NotificationsUser({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Notifikasi Pengguna"),
+        backgroundColor: const Color(0xFF5ABB4D),
+      ),
+      body: const Center(
+        child: Text(
+          "Tidak ada notifikasi baru.",
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -34,22 +58,23 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  // Constants
-  static const Color grayColor = Color(0xFFEEEEEE);
-  static const Color primaryColor = Color(0xFF5ABB4D);
-
+  //Controller and Key
   late AnimationController _animationController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _searchFocusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
 
   // State variables
   String? userRole;
   bool _isLoggedIn = FirebaseAuth.instance.currentUser != null;
-  String? _userName;
   bool _showAppBarTitle = false;
   int _currentCarouselIndex = 0;
-  String _selectedCategory = 'All';
   Timer? _timer;
+  bool _isSearchFocused = false;
+  bool _hasSearchText = false;
+  int _unreadNotifications = 0;
+  String? _selectedCategory;
 
   // Data
   final List<Map<String, String>> _carouselItems = [
@@ -70,14 +95,24 @@ class HomePageState extends State<HomePage>
     },
   ];
 
-  final List<Map<String, dynamic>> _categories = [
-    {'name': 'All', 'icon': Icons.grid_view_rounded},
-    {'name': 'Beach', 'icon': Icons.beach_access},
+  final List<Map<String, dynamic>> _kategoridestinasi = [
+    {'name': 'Pantai', 'icon': Icons.beach_access_rounded},
     {'name': 'Café', 'icon': Icons.coffee_rounded},
     {'name': 'Park', 'icon': Icons.nature_people_rounded},
     {'name': 'Mall', 'icon': Icons.shopping_bag_rounded},
     {'name': 'Hotel', 'icon': Icons.hotel_rounded},
-    {'name': 'History', 'icon': Icons.museum_rounded},
+    {'name': 'Historical', 'icon': Icons.museum_rounded},
+    {'name': 'Kuliner', 'icon': Icons.food_bank_rounded},
+  ];
+
+  final List<Map<String, dynamic>> _kategorievent = [
+    {'name': 'Bazzar', 'icon': Icons.ramen_dining_rounded},
+    {'name': 'Music', 'icon': Icons.music_note_rounded},
+    {'name': 'Religi', 'icon': Icons.church_rounded},
+    {'name': 'kultur', 'icon': Icons.theater_comedy},
+    {'name': 'sport', 'icon': Icons.sports_baseball_rounded},
+    {'name': 'sosial', 'icon': Icons.auto_stories_rounded},
+    {'name': 'Edukasi', 'icon': Icons.school},
   ];
 
   final List<Map<String, dynamic>> _destinations = [
@@ -93,7 +128,7 @@ class HomePageState extends State<HomePage>
       'title': "Pantai Nongsa",
       'image': "assets/images/slider3.png",
       'rating': 4.7,
-      'category': 'Beach',
+      'category': 'Pantai',
       'location': 'Batam',
       'isPopular': true,
     },
@@ -144,6 +179,65 @@ class HomePageState extends State<HomePage>
     },
   ];
 
+  final List<Map<String, dynamic>> _events = [
+    // Popular event
+    {
+      'title': "Konser Blackpink",
+      'image': "assets/images/slider2.png",
+      'rating': 4.8,
+      'location': 'Batam',
+    },
+    {
+      'title': "Rumah Dhafin",
+      'image': "assets/images/slider3.png",
+      'rating': 4.7,
+      'category': 'Kultur',
+      'location': 'Batam',
+    },
+    {
+      'title': "Jembatan Rikardo",
+      'image': "assets/images/slider1.png",
+      'rating': 4.9,
+      'category': 'Religi',
+      'location': 'Batam',
+    },
+    {
+      'title': "Konser King Arif",
+      'image': "assets/images/slider2.png",
+      'rating': 4.6,
+      'category': 'Music',
+      'location': 'Batam',
+    },
+    {
+      'title': "Welcome To Piayu",
+      'image': "assets/images/slider1.png",
+      'rating': 4.5,
+      'location': 'Batam',
+      'price': "Rp 110K",
+    },
+    {
+      'title': "Kapal Laud",
+      'image': "assets/images/slider3.png",
+      'rating': 4.4,
+      'location': 'Batam',
+      'price': "Rp 510K",
+    },
+    {
+      'title': "Sinaga Café",
+      'image': "assets/images/slider1.png",
+      'rating': 4.7,
+      'location': 'Batam',
+    },
+    {
+      'title': "Habil besi",
+      'image': "assets/images/slider2.png",
+      'rating': 4.8,
+      'category': 'Bazzar',
+      'location': 'Batam',
+      'price': "Rp 50K",
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -153,10 +247,25 @@ class HomePageState extends State<HomePage>
     );
     _checkUserRole();
     _checkLoginStatus();
-    _fetchUserName();
     _updateLastActive();
     _startActiveTimer();
+    _fetchNotificationCount();
     _scrollController.addListener(_onScroll);
+    _searchFocusNode.addListener(_onSearchFocusChange);
+    _searchController.addListener(_onSearchTextChange);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _timer?.cancel();
+    _animationController.dispose();
+    _searchFocusNode.removeListener(_onSearchFocusChange);
+    _searchFocusNode.dispose();
+    _searchController.removeListener(_onSearchTextChange);
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _onScroll() {
@@ -190,21 +299,6 @@ class HomePageState extends State<HomePage>
     );
   }
 
-  Future<void> _fetchUserName() async {
-    if (!mounted) return;
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      DocumentSnapshot doc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .get();
-      if (mounted) {
-        setState(() => _userName = doc['username']);
-      }
-    }
-  }
-
   Future<String?> getUserRole() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -226,13 +320,30 @@ class HomePageState extends State<HomePage>
     }
   }
 
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    _timer?.cancel();
-    _animationController.dispose();
-    super.dispose();
+  void _onSearchFocusChange() {
+    if (mounted) {
+      setState(() {
+        _isSearchFocused = _searchFocusNode.hasFocus;
+      });
+    }
+  }
+
+  void _onSearchTextChange() {
+    if (mounted) {
+      setState(() {
+        _hasSearchText = _searchController.text.isNotEmpty;
+      });
+    }
+  }
+
+  void _fetchNotificationCount() async {
+    if (!_isLoggedIn) return;
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() {
+        _unreadNotifications = 1;
+      });
+    }
   }
 
   void _toggleDrawer() {
@@ -248,14 +359,30 @@ class HomePageState extends State<HomePage>
   List<Map<String, dynamic>> _getFilteredDestinations({
     required bool isPopular,
   }) {
-    return _destinations
-        .where(
-          (dest) =>
-              dest['isPopular'] == isPopular &&
-              (_selectedCategory == 'All' ||
-                  dest['category'] == _selectedCategory),
-        )
-        .toList();
+    return _destinations.where((dest) {
+      if (dest['isPopular'] != isPopular) return false;
+
+      if (_selectedCategory == null) return true;
+
+      return dest['category'] == _selectedCategory;
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _getDestinationsByCategory() {
+    if (_selectedCategory == null) {
+      return [];
+    }
+    return _destinations.where((dest) {
+      return dest['category'] == _selectedCategory;
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _getFilteredEvents() {
+    return _events.where((event) {
+      if (_selectedCategory == null) return true;
+
+      return event['category'] == _selectedCategory;
+    }).toList();
   }
 
   @override
@@ -263,12 +390,18 @@ class HomePageState extends State<HomePage>
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: grayColor,
-      onDrawerChanged: (isOpen) {
-        if (!isOpen) _animationController.reverse();
+      onDrawerChanged: (isDrawerOpen) {
+        if (isDrawerOpen)
+          _animationController.forward();
+        else
+          _animationController.reverse();
       },
       drawer: _buildDrawer(),
       body: _buildBody(),
-      bottomNavigationBar: CustomBottomNavBar(userRole: userRole),
+      bottomNavigationBar: CustomBottomNavBar(
+        userRole: userRole,
+        curentindex: 1,
+      ), // 1 = Home
     );
   }
 
@@ -294,11 +427,35 @@ class HomePageState extends State<HomePage>
                 ],
               ),
             ),
-            _buildDrawerItem(Icons.map, "Destinasi", () {}),
-            _buildDrawerItem(Icons.event, "Event", () {}),
-            _buildDrawerItem(Icons.confirmation_number, "Tiket", () {}),
-            _buildDrawerItem(Icons.image, "Galeri", () {}),
-            _isLoggedIn && userRole != "user" && userRole != "Owner"
+            _buildDrawerItem(Icons.map_outlined, "Destinasi", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DestinasiPage()),
+              );
+            }),
+            _buildDrawerItem(Icons.event, "Event", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Eventpage()),
+              );
+            }),
+            _buildDrawerItem(Icons.image, "Galeri", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Galeripage()),
+              );
+            }),
+            _buildDrawerItem(Icons.forum_outlined, "Forum Diskusi", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DiscussPage()),
+              );
+            }),
+            _isLoggedIn && userRole != "user"
                 ? _buildDrawerItem(
                   Icons.tips_and_updates,
                   "Tambah Destinasi",
@@ -312,56 +469,15 @@ class HomePageState extends State<HomePage>
                   },
                 )
                 : SizedBox.shrink(),
-
-            _isLoggedIn && userRole != "Owner"
-                ? _buildDrawerItem(
-                  Icons.admin_panel_settings,
-                  "Request Role",
-                  () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RequestRolePage(),
-                      ),
-                    );
-                  },
-                )
-                : SizedBox.shrink(),
-
-            _isLoggedIn && userRole == "Owner"
-                ? _buildDrawerItem(Icons.calendar_today, "Add Event", () {
-                  // TODO: Ganti dengan navigasi ke halaman AddEvent jika sudah ada
-                })
-                : SizedBox.shrink(),
-
-            _buildDrawerItem(
-              _isLoggedIn ? Icons.logout : Icons.login,
-              _isLoggedIn ? "Keluar" : "Masuk",
-              () async {
-                if (_isLoggedIn) {
-                  await FirebaseAuth.instance.signOut();
-                  if (mounted) {
-                    setState(() {
-                      userRole = null;
-                      _userName = null;
-                    });
-                  }
-                  if (mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  }
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                }
-              },
-            ),
+            if (_isLoggedIn && userRole != "owner")
+              _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => RequestRolePage()),
+                );
+              }),
+            if (userRole == "owner")
+              _buildDrawerItem(Icons.calendar_today, "Add Event", () {}),
           ],
         ),
       ),
@@ -369,7 +485,17 @@ class HomePageState extends State<HomePage>
   }
 
   ListTile _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
+    return ListTile(
+      leading: Icon(icon, color: Colors.black54),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onTap: onTap,
+    );
   }
 
   Widget _buildBody() {
@@ -380,20 +506,9 @@ class HomePageState extends State<HomePage>
         children: [
           _buildSearchBar(),
           const SizedBox(height: 5),
-          _buildWelcomeSection(),
-          const SizedBox(height: 20),
           _buildCarousel(),
           _buildCategoriesSection(),
-          _buildDestinationSection(
-            title: "Tempat Wisata Batam Terpopuler",
-            icon: Icons.star,
-            isPopular: true,
-          ),
-          _buildDestinationSection(
-            title: "Tempat Wisata Lainnya",
-            icon: Icons.location_on,
-            isPopular: false,
-          ),
+          _buildFilteredContent(),
           const SizedBox(height: 16),
         ],
       ),
@@ -416,58 +531,117 @@ class HomePageState extends State<HomePage>
           ),
           Expanded(
             child: TextField(
+              controller: _searchController, // Terhubung ke controller
+              focusNode: _searchFocusNode,
+              style: GoogleFonts.poppins(color: Colors.black, fontSize: 14),
               decoration: InputDecoration(
                 hintText: "Search",
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: GoogleFonts.poppins(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                ),
+                prefixIcon:
+                    _isSearchFocused
+                        ? null
+                        : Icon(Icons.search, color: Colors.grey.shade600),
+                suffixIcon:
+                    _hasSearchText
+                        ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                        : null,
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 16.0,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 10.0),
               ),
             ),
           ),
+          if (_isLoggedIn) ...[
+            const SizedBox(width: 8),
+            _buildNotificationIcon(),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildWelcomeSection() {
-    if (!_isLoggedIn || _userName == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.only(top: 30, left: 16, right: 16),
-      color: grayColor,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildNotificationIcon() {
+    return IconButton(
+      onPressed: () {
+        // Logika dipindahkan ke sini.
+        if (_isLoggedIn) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NotificationsUser()),
+          );
+          setState(() {
+            _unreadNotifications = 0;
+          });
+        } else {
+          // Tampilkan dialog jika pengguna belum login
+          showDialog(
+            context: context,
+            builder:
+                (BuildContext dialogContext) => AlertDialog(
+                  title: const Text('Akses Ditolak'),
+                  content: const Text(
+                    'Silakan masuk terlebih dahulu untuk melihat notifikasi.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('OK'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text('Masuk'),
+                    ),
+                  ],
+                ),
+          );
+        }
+      },
+      icon: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Text(
-            "Hello, $_userName",
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF000000),
-            ),
+          const Icon(
+            Icons.notifications_outlined,
+            color: Colors.black54,
+            size: 28,
           ),
-          const SizedBox(height: 4),
-          Text(
-            "Welcome to GuideME",
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF808080),
+          if (_isLoggedIn &&
+              _unreadNotifications >
+                  0) // Badge hanya muncul jika login DAN ada notif
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -606,28 +780,54 @@ class HomePageState extends State<HomePage>
   }
 
   Widget _buildCategoriesSection() {
+    return Container(
+      color: grayColor,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildIndividualCategoryList(
+            "Kategori Destinasi",
+            _kategoridestinasi,
+          ),
+          const SizedBox(height: 16),
+          _buildIndividualCategoryList("Kategori Event", _kategorievent),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndividualCategoryList(
+    String title,
+    List<Map<String, dynamic>> categories,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, top: 12, bottom: 4),
           child: Text(
-            "Categories",
+            title,
             style: GoogleFonts.poppins(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
         ),
         SizedBox(
-          height: 110,
-          child: ListView.builder(
+          height: 85, // Tinggi tetap sama
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: _categories.length,
-            itemBuilder: (context, index) {
-              return _buildCategoryItem(_categories[index]);
-            },
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+            ), // Padding utama untuk list
+            itemCount: categories.length,
+            itemBuilder:
+                (context, index) => _buildCategoryItem(categories[index]),
+            separatorBuilder:
+                (context, index) =>
+                    const SizedBox(width: 12), // Jarak antar item
           ),
         ),
       ],
@@ -636,65 +836,219 @@ class HomePageState extends State<HomePage>
 
   Widget _buildCategoryItem(Map<String, dynamic> category) {
     final isSelected = _selectedCategory == category['name'];
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      margin: EdgeInsets.only(
-        top: isSelected ? 0 : 8.0,
-        bottom: isSelected ? 8.0 : 0,
-      ),
-      child: GestureDetector(
-        onTap: () {
-          if (mounted) {
-            setState(() => _selectedCategory = category['name']);
-          }
-        },
-        child: Container(
-          width: 85,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isSelected ? primaryColor : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          isSelected
-                              ? primaryColor.withOpacity(0.3)
-                              : Colors.black.withOpacity(0.05),
-                      blurRadius: isSelected ? 8 : 4,
-                      spreadRadius: isSelected ? 2 : 0,
-                      offset:
-                          isSelected ? const Offset(0, 3) : const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  category['icon'],
-                  color:
-                      isSelected ? Colors.white : primaryColor.withOpacity(0.8),
-                  size: 30,
-                ),
+    return GestureDetector(
+      // Menghapus AnimatedContainer untuk menghilangkan pergeseran
+      onTap: () {
+        if (mounted) {
+          setState(() {
+            // Jika kategori yang sama ditekan, unselect (kembali ke semua)
+            if (_selectedCategory == category['name']) {
+              _selectedCategory = null;
+            } else {
+              _selectedCategory = category['name'];
+            }
+          });
+        }
+      },
+      child: Container(
+        // Menggunakan Container untuk kontrol lebar dan margin
+        width: 70, // Lebar item kategori disesuaikan
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+        ), // Padding vertikal di dalam item
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              category['icon'],
+              color: isSelected ? primaryColor : Colors.black87,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              category['name'],
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? primaryColor : Colors.black87,
               ),
-              const SizedBox(height: 8),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilteredContent() {
+    bool isDestCategory = _kategoridestinasi.any(
+      (cat) => cat['name'] == _selectedCategory,
+    );
+    bool isEventCategory = _kategorievent.any(
+      (cat) => cat['name'] == _selectedCategory,
+    );
+    return Column(
+      children: [
+        if (_selectedCategory == null) ...[
+          _buildDestinationSection(
+            title: "Tempat Wisata Batam Terpopuler",
+            icon: Icons.star,
+            isPopular: true,
+          ),
+          _buildDestinationSection(
+            title: "Tempat Wisata Lainnya",
+            icon: Icons.location_on,
+            isPopular: false,
+          ),
+          _buildEventSection(title: "Event Terbaru", icon: Icons.event),
+        ] else if (isDestCategory) ...[
+          _buildFilteredDestinationSection(),
+        ] else if (isEventCategory) ...[
+          _buildEventSection(
+            title: "Event: $_selectedCategory",
+            icon: Icons.event,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildFilteredDestinationSection() {
+    final destinations = _getDestinationsByCategory();
+    final categoryData = _kategoridestinasi.firstWhere(
+      (cat) => cat['name'] == _selectedCategory,
+      orElse: () => {'icon': Icons.location_on}, // Fallback icon
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
+          color: grayColor,
+          child: Row(
+            children: [
+              Icon(categoryData['icon'], color: primaryColor, size: 24),
+              const SizedBox(width: 8),
               Text(
-                category['name'],
+                "Destinasi: $_selectedCategory",
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? primaryColor : Colors.black87,
+                  color: Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
-      ),
+        SizedBox(
+          height: 240,
+          child:
+              destinations.isEmpty
+                  ? Center(
+                    child: Text(
+                      "Tidak ada destinasi dalam kategori ini.",
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                  : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    itemCount: destinations.length,
+                    itemBuilder: (context, index) {
+                      final destination = destinations[index];
+                      return Container(
+                        width: 180,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: DestinationCard(
+                          title: destination['title'],
+                          image: destination['image'],
+                          rating: destination['rating'],
+                          location: destination['location'],
+                        ),
+                      );
+                    },
+                  ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEventSection({required String title, required IconData icon}) {
+    final events = _getFilteredEvents();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color:
+                    primaryColor, // Changed from Colors.blue to primaryColor for consistency
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  color: Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 240,
+          child:
+              events.isEmpty
+                  ? Center(
+                    child: Text(
+                      "Tidak ada event dalam kategori ini.",
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                  : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    itemCount: events.length,
+                    itemBuilder: (context, index) {
+                      final event = events[index];
+                      return Container(
+                        width: 180,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: EventCard(
+                          title: event['title'] ?? '',
+                          image: event['image'] ?? '',
+                          date: event['date'] ?? '',
+                          location: event['location'] ?? '',
+                          price: event['price'],
+                        ),
+                      );
+                    },
+                  ),
+        ),
+      ],
     );
   }
 
@@ -718,6 +1072,7 @@ class HomePageState extends State<HomePage>
               Text(
                 title,
                 style: GoogleFonts.poppins(
+                  color: Colors.black87,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -733,6 +1088,7 @@ class HomePageState extends State<HomePage>
                     child: Text(
                       "No destinations in this category",
                       style: GoogleFonts.poppins(
+                        color: Colors.black87,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -765,6 +1121,171 @@ class HomePageState extends State<HomePage>
                   ),
         ),
       ],
+    );
+  }
+}
+
+class EventCard extends StatelessWidget {
+  final String title;
+  final String image;
+  final String date;
+  final String location;
+  final String? price;
+
+  const EventCard({
+    super.key,
+    required this.title,
+    required this.image,
+    required this.date,
+    required this.location,
+    this.price,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: Image.network(
+                image,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey.shade300,
+                    child: const Center(
+                      child: Icon(Icons.event, size: 50, color: Colors.grey),
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Gradient Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                    stops: const [0.6, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Price Badge (top right)
+            if (price != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    price!,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            // Content (bottom)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 2.0,
+                            color: Colors.black.withOpacity(0.6),
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            date,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -849,6 +1370,7 @@ class DestinationCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
                   ],
@@ -913,55 +1435,61 @@ class DestinationCard extends StatelessWidget {
 
 class CustomBottomNavBar extends StatefulWidget {
   final String? userRole;
+  final int curentindex;
 
-  const CustomBottomNavBar({super.key, this.userRole});
+  const CustomBottomNavBar({super.key, this.userRole, this.curentindex = 1});
+
   @override
   State<CustomBottomNavBar> createState() => _CustomBottomNavBarState();
 }
 
 class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
-  int _selectedIndex = 1;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.curentindex;
+  }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
+    // Tidak ada perubahan state untuk menghilangkan animasi
     final currentUser = FirebaseAuth.instance.currentUser;
 
     switch (index) {
-      case 0:
-
-        /// notifikasi
-        break;
-      case 1:
+      case 0: // Home
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const HomePage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
         break;
-      case 2:
+      case 1: // Login/Profile
         if (currentUser == null) {
-          showDialog(
-            context: context,
-            builder:
-                (context) => AlertDialog(
-                  title: const Text('Akses Ditolak'),
-                  content: const Text(
-                    'Silakan login terlebih dahulu untuk mengakses profil.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder:
+                  (context, animation, secondaryAnimation) =>
+                      const LoginScreen(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
           );
         } else {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            PageRouteBuilder(
+              pageBuilder:
+                  (context, animation, secondaryAnimation) =>
+                      const ProfileScreen(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
           );
         }
         break;
@@ -970,11 +1498,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    final List<NavItem> items = [];
-
-    items.add(NavItem(icon: Icons.notifications, index: items.length));
-    items.add(NavItem(icon: Icons.home, index: items.length));
-    items.add(NavItem(icon: Icons.person, index: items.length));
+    final currentUser = FirebaseAuth.instance.currentUser;
 
     return Container(
       height: 60,
@@ -985,48 +1509,38 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children:
-            items.map((item) {
-              return _buildNavItem(item.icon, item.index);
-            }).toList(),
+        children: [
+          _buildNavItem(Icons.home, 0, "Home"),
+          _buildNavItem(
+            currentUser == null ? Icons.person : Icons.person,
+            1,
+            currentUser == null ? "Login" : "Profile",
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index) {
+  Widget _buildNavItem(IconData icon, int index, String label) {
     final bool isSelected = _selectedIndex == index;
 
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      customBorder: const CircleBorder(),
-      splashColor: Colors.white24,
-      highlightColor: Colors.white30,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white24 : Colors.transparent,
-          shape: BoxShape.circle,
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onItemTapped(index),
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: TweenAnimationBuilder(
-          tween: Tween<double>(begin: 1.0, end: isSelected ? 1.2 : 1.0),
-          duration: const Duration(milliseconds: 200),
-          builder: (context, scale, child) {
-            return Transform.scale(
-              scale: scale,
-              child: Icon(icon, color: Colors.white, size: 28),
-            );
-          },
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.white : Colors.white70,
+            size: isSelected ? 30 : 28,
+          ),
         ),
       ),
     );
   }
-}
-
-// Helper class to store icon data
-class NavItem {
-  final IconData icon;
-  final int index;
-
-  NavItem({required this.icon, required this.index});
 }

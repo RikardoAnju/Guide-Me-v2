@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -328,6 +329,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _logout() async {
+    final shouldLogout = await _showLogoutConfirmation();
+    if (!shouldLogout) return;
+
+    try {
+      setState(() => isLoading = true);
+
+      await _auth.signOut();
+
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => HomePage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      _showErrorSnackBar('Gagal logout: ${e.toString()}');
+    }
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -346,6 +368,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<bool> _showLogoutConfirmation() async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text('Konfirmasi Logout'),
+            content: const Text('Apakah Anda yakin ingin keluar dari akun?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Batal', style: TextStyle(color: Colors.grey[600])),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Logout'),
+              ),
+            ],
+          ),
+    );
+
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(
@@ -358,7 +411,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final Size screenSize = MediaQuery.of(context).size;
         final contentWidth =
             screenSize.width > 600 ? 600.0 : screenSize.width * 0.92;
-
         return Scaffold(
           backgroundColor: backgroundColor,
           body: SafeArea(
@@ -411,8 +463,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Expanded(
                                   child: Center(
                                     child: Text(
-                                      'My Profile',
-                                      style: TextStyle(
+                                      'Profil',
+                                      style: GoogleFonts.poppins(
+                                        // Ubah ke GoogleFonts
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: textColor,
@@ -505,7 +558,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           // Username display
                           Text(
                             username.isEmpty ? 'Set your username' : username,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
+                              // Ubah ke GoogleFonts
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: textColor,
@@ -538,8 +592,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Personal Information',
-                                    style: TextStyle(
+                                    'Informasi Pribadi',
+                                    style: GoogleFonts.poppins(
+                                      // Ubah ke GoogleFonts
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: primaryGreen,
@@ -604,8 +659,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Settings',
-                                    style: TextStyle(
+                                    'Pengaturan',
+                                    style: GoogleFonts.poppins(
+                                      // Ubah ke GoogleFonts
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: primaryGreen,
@@ -613,11 +669,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   const SizedBox(height: 16),
 
-                                  const SizedBox(height: 12),
-                                 
                                   _buildActionButton(
                                     icon: Icons.notifications_outlined,
-                                    label: 'Notification Settings',
+                                    label: 'Pengaturan Notifikasi',
                                     onTap: () {
                                       Navigator.push(
                                         context,
@@ -632,24 +686,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   const SizedBox(height: 12),
                                   _buildActionButton(
                                     icon: Icons.feedback_outlined,
-                                    label: 'Send Feedback',
+                                    label: 'Kirim Umpan Balik',
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const FeedbackScreen())
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  const FeedbackScreen(),
+                                        ),
                                       );
                                     },
                                   ),
                                   const SizedBox(height: 12),
                                   _buildActionButton(
                                     icon: Icons.info_outline,
-                                    label: 'About App',
+                                    label: 'Tentang Aplikasi',
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => const AboutApp())
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => const AboutApp(),
+                                        ),
                                       );
                                     },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Logout button
+                                  _buildActionButton(
+                                    icon: Icons.logout,
+                                    label: 'Logout',
+                                    color: Colors.red.shade600,
+                                    onTap: _logout,
                                   ),
                                 ],
                               ),
@@ -701,7 +770,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
+                    // Ubah ke GoogleFonts
                     fontSize: 13,
                     color: subtitleColor,
                     fontWeight: FontWeight.w500,
@@ -710,7 +780,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
                 Text(
                   value.isEmpty ? '-' : value,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
+                    // Ubah ke GoogleFonts
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: textColor,
@@ -778,24 +849,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
+                  // Ubah ke GoogleFonts
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: textColor,
                 ),
-              ),
-            ),
-            // Improved arrow button
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.arrow_forward_rounded,
-                color: primaryColor,
-                size: 18,
               ),
             ),
           ],

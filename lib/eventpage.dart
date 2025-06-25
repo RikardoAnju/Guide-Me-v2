@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:guide_me/galeripage.dart';
 import './home.dart';
+import 'discusspage.dart';
 import 'destinasipage.dart';
 import './app_colors.dart';
 import 'requestRole.dart';
@@ -274,6 +275,13 @@ class _EventpageState extends State<Eventpage>
                 MaterialPageRoute(builder: (context) => const Galeripage()),
               );
             }),
+            _buildDrawerItem(Icons.forum_outlined, "Forum Diskusi", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DiscussPage()),
+              );
+            }),
             _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
               Navigator.pop(context);
               Navigator.push(
@@ -289,14 +297,6 @@ class _EventpageState extends State<Eventpage>
                   MaterialPageRoute(
                     builder: (context) => TambahDestinasiPage(),
                   ),
-                );
-              }),
-            if (_isLoggedIn && userRole != "owner")
-              _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RequestRolePage()),
                 );
               }),
             if (userRole == "owner")

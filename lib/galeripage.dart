@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import './home.dart';
 import 'destinasipage.dart';
 import 'eventpage.dart';
+import 'discusspage.dart';
 import './app_colors.dart';
 import 'requestRole.dart';
 import 'tambah_destinasi.dart';
@@ -271,9 +272,16 @@ class _GaleripageState extends State<Galeripage>
                 MaterialPageRoute(builder: (context) => const Eventpage()),
               );
             }),
-            _buildDrawerItem(Icons.event, "Galeri", () {
+            _buildDrawerItem(Icons.image, "Galeri", () {
               Navigator.pop(context);
             }, isSelected: true),
+            _buildDrawerItem(Icons.forum_outlined, "Forum Diskusi", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DiscussPage()),
+              );
+            }),
             _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
               Navigator.pop(context);
               Navigator.push(

@@ -454,8 +454,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     onPressed:
                                         () => Navigator.pushReplacement(
                                           context,
-                                          MaterialPageRoute(
-                                            builder: (context) => HomePage(),
+                                          PageRouteBuilder(
+                                            // Use PageRouteBuilder for smooth transition
+                                            pageBuilder:
+                                                (
+                                                  context,
+                                                  animation,
+                                                  secondaryAnimation,
+                                                ) => const HomePage(),
+                                            transitionsBuilder: (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              return FadeTransition(
+                                                opacity: animation,
+                                                child: child,
+                                              );
+                                            },
+                                            transitionDuration: const Duration(
+                                              milliseconds: 300,
+                                            ), // Add transition duration
                                           ),
                                         ),
                                   ),

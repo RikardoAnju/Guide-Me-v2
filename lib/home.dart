@@ -431,28 +431,80 @@ class HomePageState extends State<HomePage>
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const DestinasiPage()),
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          const DestinasiPage(),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 300),
+                ),
               );
             }),
             _buildDrawerItem(Icons.event, "Event", () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Eventpage()),
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          const Eventpage(),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 300),
+                ),
               );
             }),
             _buildDrawerItem(Icons.image, "Galeri", () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Galeripage()),
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          const Galeripage(),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 300),
+                ),
               );
             }),
             _buildDrawerItem(Icons.forum_outlined, "Forum Diskusi", () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const DiscussPage()),
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          const DiscussPage(),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 300),
+                ),
               );
             }),
             _isLoggedIn && userRole == "owner"
@@ -460,10 +512,25 @@ class HomePageState extends State<HomePage>
                   Icons.tips_and_updates,
                   "Tambah Destinasi",
                   () {
+                    // Changed to pushReplacement for TambahDestinasiPage
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => TambahDestinasiPage(),
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                                TambahDestinasiPage(),
+                        transitionsBuilder: (
+                          context,
+                          animation,
+                          secondaryAnimation,
+                          child,
+                        ) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        transitionDuration: const Duration(milliseconds: 300),
                       ),
                     );
                   },
@@ -473,7 +540,20 @@ class HomePageState extends State<HomePage>
               _buildDrawerItem(Icons.admin_panel_settings, "Request Role", () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => RequestRolePage()),
+                  PageRouteBuilder(
+                    pageBuilder:
+                        (context, animation, secondaryAnimation) =>
+                            RequestRolePage(),
+                    transitionsBuilder: (
+                      context,
+                      animation,
+                      secondaryAnimation,
+                      child,
+                    ) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                    transitionDuration: const Duration(milliseconds: 300),
+                  ),
                 );
               }),
             if (userRole == "owner")
@@ -1458,10 +1538,20 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
+            // Use PageRouteBuilder for smooth transition
             pageBuilder:
                 (context, animation, secondaryAnimation) => const HomePage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(
+              milliseconds: 300,
+            ), // Add transition duration
           ),
         );
         break;
@@ -1470,22 +1560,42 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(
+              // Use PageRouteBuilder for smooth transition
               pageBuilder:
                   (context, animation, secondaryAnimation) =>
                       const LoginScreen(),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
+              transitionsBuilder: (
+                context,
+                animation,
+                secondaryAnimation,
+                child,
+              ) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Add transition duration
             ),
           );
         } else {
           Navigator.pushReplacement(
             context,
             PageRouteBuilder(
+              // Use PageRouteBuilder for smooth transition
               pageBuilder:
                   (context, animation, secondaryAnimation) =>
                       const ProfileScreen(),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
+              transitionsBuilder: (
+                context,
+                animation,
+                secondaryAnimation,
+                child,
+              ) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(
+                milliseconds: 300,
+              ), // Add transition duration
             ),
           );
         }

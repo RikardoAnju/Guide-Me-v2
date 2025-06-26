@@ -455,7 +455,7 @@ class HomePageState extends State<HomePage>
                 MaterialPageRoute(builder: (context) => const DiscussPage()),
               );
             }),
-            _isLoggedIn && userRole != "user"
+            _isLoggedIn && userRole == "owner"
                 ? _buildDrawerItem(
                   Icons.tips_and_updates,
                   "Tambah Destinasi",
@@ -851,11 +851,8 @@ class HomePageState extends State<HomePage>
         }
       },
       child: Container(
-        // Menggunakan Container untuk kontrol lebar dan margin
-        width: 70, // Lebar item kategori disesuaikan
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-        ), // Padding vertikal di dalam item
+        width: 70,
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

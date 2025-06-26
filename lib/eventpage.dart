@@ -289,7 +289,7 @@ class _EventpageState extends State<Eventpage>
                 MaterialPageRoute(builder: (context) => RequestRolePage()),
               );
             }),
-            if (_isLoggedIn && userRole != "user")
+            if (_isLoggedIn && userRole == "owner")
               _buildDrawerItem(Icons.tips_and_updates, "Tambah Destinasi", () {
                 Navigator.pop(context);
                 Navigator.push(

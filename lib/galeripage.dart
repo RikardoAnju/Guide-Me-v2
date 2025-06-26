@@ -289,7 +289,7 @@ class _GaleripageState extends State<Galeripage>
                 MaterialPageRoute(builder: (context) => RequestRolePage()),
               );
             }),
-            if (_isLoggedIn && userRole != "user")
+            if (_isLoggedIn && userRole == "owner")
               _buildDrawerItem(Icons.tips_and_updates, "Tambah Destinasi", () {
                 Navigator.pop(context);
                 Navigator.push(

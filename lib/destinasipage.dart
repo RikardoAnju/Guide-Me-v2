@@ -313,7 +313,7 @@ class _DestinasiPageState extends State<DestinasiPage>
                 MaterialPageRoute(builder: (context) => const DiscussPage()),
               );
             }),
-            if (_isLoggedIn && userRole != "user")
+            if (_isLoggedIn && userRole == "owner")
               _buildDrawerItem(Icons.tips_and_updates, "Tambah Destinasi", () {
                 Navigator.pop(context);
                 Navigator.push(
